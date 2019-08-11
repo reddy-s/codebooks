@@ -1,0 +1,21 @@
+{
+    "num_workers": 0,
+    "cluster_name": "dev-spark-cluster",
+    "spark_version": "5.5.x-scala2.11",
+    "spark_conf": {},
+    "aws_attributes": {
+        "first_on_demand": 0,
+        "availability": "ON_DEMAND",
+        "zone_id": "us-west-2c",
+        "spot_bid_price_percent": 100,
+        "ebs_volume_count": 0
+    },
+    "node_type_id": "dev-tier-node",
+    "ssh_public_keys": [],
+    "custom_tags": {},
+    "spark_env_vars": {
+        "PYSPARK_PYTHON": "/databricks/python3/bin/python3"
+    },
+    "autotermination_minutes": 120,
+    "init_scripts": []
+}
