@@ -1,0 +1,289 @@
+#!/bin/bash
+
+echo ""
+echo "[INFO] Make sure you have already authenticated with GCP. If not you can run 'gcloud auth login'."
+echo "[INFO] Also, make sure that the Dataproc API is enabled"
+echo "[INFO] If the bucket for state store is not created, please go ahead and create one using gsutil mb -l <region> gs://<bucket>"
+echo ""
+
+unset ENVIRONMENT
+unset PROJECT_ID
+unset GCLOUD_EMAIL
+unset REGION
+unset ZONE
+unset CLUSTER_NAME
+unset ACTION
+unset BUCKET
+unset MASTER_MACHINE_TYPE
+unset WORKER_MACHINE_TYPE
+unset MASTER_DISK_SIZE
+unset WORKER_DISK_SIZE
+unset WORKERS
+unset PREEMPTIBLE_WORKERS
+unset IMAGE
+
+function usage()
+{
+    echo ""
+    echo "$(tput setaf 7)Provison a GCP DataProc Cluster using this script $(tput sgr0)"
+    echo ""
+    echo "-p   | --project-id              Project id to create/use (Mandatory)"
+    echo "-ge  | --gcloud-email            Gcloud Email Address (Mandatory)"
+    echo "-cn  | --cluster-name            Cluster name (Mandatory)"
+    echo "-b   | --bucket                  Name of the bucket to be sued for state store (Mandatory)"
+    echo "-e   | --environment             Which environment does this cluster belong to. DEFAULT: dev"
+    echo "-r   | --region                  Which region should the cluster be deployed to. DEFAULT: europe-west2"
+    echo "-a   | --action                  Create/Delete the cluster. DEFAULT: create"
+    echo "-z   | --zone                    Which zone should the cluster be deployed to. DEFAULT: europe-west2-a"
+    echo "-mmt | --master-machine-type     Master machine type. DEFAULT: n1-standard-2"
+    echo "-wmt | --worker-machine-type     Worker machine type. DEFAULT: n1-standard-1"
+    echo "-mds | --master-disk-size        Master disk size, DEFAULT: 100"
+    echo "-wds | --worker-disk-size        Worker disk size, DEFAULT: 50"
+    echo "-w   | --workers                 No of Workers, DEFAULT: 3"
+    echo "-pw  | --preemptible-workers     No of preemptible workers, DEFAULT: 1"
+    echo "-i   | --image                   Image to be used for dataproc cluster, DEFAULT: 1.3-debian9"
+    echo "-h   | --help                    Displays all the available options"
+    echo ""
+    echo "$(tput setaf 7)Example usage: $(tput sgr0)"
+    echo "  => ./dataproc.sh --gcloud-email=sample@gmail.com"
+    echo "          --project-id=spark-dataproc-cluster"
+    echo "          --cluster-name=test-spark-cluster"
+    echo "          --bucket=dataproc-statestore"
+    echo "          --action=create"
+    echo ""
+}
+
+while [ "$1" != "" ]; do
+    PARAM=`echo $1 | awk -F= '{print $1}'`
+    VALUE=`echo $1 | awk -F= '{print $2}'`
+    case $PARAM in
+        -h | --help)
+            usage
+            exit
+            ;;
+        -e | --environment)
+            ENVIRONMENT=$VALUE
+            ;;
+        -a | --action)
+            ACTION=$VALUE
+            ;;
+        -b | --bucket)
+            BUCKET=$VALUE
+            ;;
+        -p | --project-id)
+            PROJECT_ID=$VALUE
+            ;;
+        -ge | --gcloud-email)
+            GCLOUD_EMAIL=$VALUE
+            ;;
+        -cn | --cluster-name)
+            CLUSTER_NAME=$VALUE
+            ;;
+        -mmt | --master-machine-type)
+            MASTER_MACHINE_TYPE=$VALUE
+            ;;
+        -wmt | --worker-machine-type)
+            WORKER_MACHINE_TYPE=$VALUE
+            ;;
+        -mds | --master-disk-size)
+            MASTER_DISK_SIZE=$VALUE
+            ;;
+        -wds | --worker-disk-size)
+            WORKER_DISK_SIZE=$VALUE
+            ;;
+        -w | --workers)
+            WORKERS=$VALUE
+            ;;
+        -pw | --preemptible-workers)
+            PREEMPTIBLE_WORKERS=$VALUE
+            ;;
+        -r | --region)
+            REGION=$VALUE
+            ;;
+        -i | --image)
+            IMAGE=$VALUE
+            ;;
+        -z | --zone)
+            ZONE=$VALUE
+            ;;
+        *)
+            echo "$(tput setaf 1)[ERROR] unknown parameter \"$PARAM\" $(tput sgr0)"
+            usage
+            exit 1
+            ;;
+    esac
+    shift
+done
+
+if [[ -z "$GCLOUD_EMAIL" ]]; then
+    echo "$(tput setaf 1)[ERROR] GCP Email Address not specified. Use the '--gcloud-email' flag to specify the email address to authenticate with GCP."
+    exit 1
+fi
+
+if [[ -z "$PROJECT_ID" ]]; then
+    echo "$(tput setaf 1)[ERROR] GCP Project ID not specified. Use the '--project-id' flag to specify which project to use/create in GCP."
+    exit 1
+fi
+
+if [[ -z "$CLUSTER_NAME" ]]; then
+    echo "$(tput setaf 1)[ERROR] DataProc cluster name not specified. Use the '--cluster-name' flag to specify which project to create in GCP."
+    exit 1
+fi
+
+if [[ -z "$BUCKET" ]]; then
+    echo "$(tput setaf 1)[ERROR] Bucket name for state store not specified. Use the '--bucket' flag to specify which bucket to be used for state store in GCP."
+    exit 1
+fi
+
+if [[ -z "$REGION" ]]; then
+    REGION="europe-west2"
+    echo "$(tput setaf 3)[WARN] Region defaulted to 'europe-west2', as not specified through '--region' flag"
+fi
+
+if [[ -z "$ACTION" ]]; then
+    ACTION="create"
+    echo "$(tput setaf 3)[WARN] Action defaulted to 'create', as not specified through '--action' flag"
+fi
+
+if [[ -z "$ZONE" ]]; then
+    ZONE="europe-west2-a"
+    echo "$(tput setaf 3)[WARN] ZONE defaulted to 'europe-west2-a', as not specified through '--zone' flag"
+fi
+
+if [[ -z "$ENVIRONMENT" ]]; then
+    ENVIRONMENT="dev"
+    echo "$(tput setaf 3)[WARN] ENVIRONMENT defaulted to 'dev', as not specified through '--environment' flag"
+fi
+
+echo "$(tput sgr0)"
+echo "[INFO] GCP Email Address: $GCLOUD_EMAIL"
+echo "[INFO] GCP Project ID: $PROJECT_ID"
+echo "[INFO] GCP Region: $REGION"
+echo "[INFO] GCP Zone: $ZONE"
+echo "[INFO] GCP Environment: $ENVIRONMENT"
+echo "$(tput setaf 4)"
+
+gcloud config set account $GCLOUD_EMAIL
+gcloud config set compute/region $REGION
+gcloud config set compute/zone $ZONE
+
+if [[ -z $(gcloud projects list --filter=projectId=$PROJECT_ID --format="value(projectId)") ]]; then
+    echo ""
+    echo "$(tput setaf 3)[WARN] Project $PROJECT_ID does not exist. Creating one now $(tput setaf 4)"
+    gcloud projects create $PROJECT_ID --name=$PROJECT_ID-$ENVIRONMENT
+    gcloud config set project $PROJECT_ID
+else
+    gcloud config set project $PROJECT_ID
+fi
+
+echo "$(tput sgr0)"
+echo "[INFO] Current gcloud configuration:"
+echo "$(tput setaf 4)"
+
+gcloud config list
+
+echo "$(tput sgr0)"
+echo "[INFO] Performing $(tput setaf 4) $ACTION $(tput sgr0) operation on $(tput setaf 4) $CLUSTER_NAME $(tput sgr0)"
+echo "[INFO] Cluster name: $CLUSTER_NAME"
+echo "[INFO] State store: gs://$BUCKET "
+
+if [[ -z "$MASTER_MACHINE_TYPE" ]]; then
+    MASTER_MACHINE_TYPE="n1-standard-2"
+    echo "$(tput setaf 3)[WARN] Master machine type defaulted to 'n1-standard-2', as not specified through '--master-machine-type' flag $(tput sgr0)"
+else
+    echo "[INFO] Master machine type: $MASTER_MACHINE_TYPE "
+fi
+
+if [[ -z "$WORKER_MACHINE_TYPE" ]]; then
+    WORKER_MACHINE_TYPE="n1-standard-1"
+    echo "$(tput setaf 3)[WARN] Worker machine type defaulted to 'n1-standard-1', as not specified through '--worker-machine-type' flag $(tput sgr0)"
+else
+    echo "[INFO] Worker machine type: $WORKER_MACHINE_TYPE "
+fi
+
+if [[ -z "$MASTER_DISK_SIZE" ]]; then
+    MASTER_DISK_SIZE="100"
+    echo "$(tput setaf 3)[WARN] Master disk size defaulted to '100', as not specified through '--master-disk-size' flag $(tput sgr0)"
+else
+    echo "[INFO] Master disk size: $MASTER_DISK_SIZE "
+fi
+
+if [[ -z "$WORKER_DISK_SIZE" ]]; then
+    WORKER_DISK_SIZE="50"
+    echo "$(tput setaf 3)[WARN] Worker disk size defaulted to '50', as not specified through '--worker-disk-size' flag $(tput sgr0)"
+else
+    echo "[INFO] Worker disk size: $WORKER_DISK_SIZE "
+fi
+
+if [[ -z "$WORKERS" ]]; then
+    WORKERS="3"
+    echo "$(tput setaf 3)[WARN] Workers defaulted to '3', as not specified through '--workers' flag $(tput sgr0)"
+else
+    echo "[INFO] Workers: $WORKERS"
+fi
+
+if [[ -z "$PREEMPTIBLE_WORKERS" ]]; then
+    PREEMPTIBLE_WORKERS="1"
+    echo "$(tput setaf 3)[WARN] Preemptible workers defaulted to '1', as not specified through '--preemptible-workers' flag $(tput sgr0)"
+else
+    echo "[INFO] Workers: $PREEMPTIBLE_WORKERS"
+fi
+
+if [[ -z "$IMAGE" ]]; then
+    IMAGE="1.3-debian9"
+    echo "$(tput setaf 3)[WARN] Image version defaulted to '1.3-debian9', as not specified through '--image' flag $(tput sgr0)"
+else
+    echo "[INFO] Image Version: $IMAGE"
+fi
+
+echo ""
+
+if [ $ACTION == 'delete' ]; then
+    if [[ -z $(gcloud dataproc clusters list --region $REGION --filter=clusterName=$CLUSTER_NAME --format="value(clusterName)") ]]; then
+        echo "$(tput setaf 3)[WARN] Cluster with name $CLUSTER_NAME does not exist$(tput sgr0). "
+        echo ""
+        exit 0
+    else
+        gcloud dataproc clusters delete $CLUSTER_NAME --region $REGION
+        echo "$(tput setaf 4)[INFO] Sucessfully deleted the dataproc cluster: $CLUSTER_NAME.$(tput sgr0)"
+    fi
+elif [ $ACTION == 'create' ]; then
+    if [[ -z $(gcloud dataproc clusters list --region $REGION --filter=clusterName=$CLUSTER_NAME --format="value(clusterName)") ]]; then
+        echo ""
+        echo "[INFO] Creating cluster now........"
+        echo "$(tput setaf 4)"
+        gcloud beta dataproc clusters create $CLUSTER_NAME \
+            --optional-components=ANACONDA,JUPYTER \
+            --enable-component-gateway \
+            --bucket $BUCKET \
+            --region $REGION \
+            --subnet default \
+            --zone $ZONE \
+            --master-machine-type $MASTER_MACHINE_TYPE \
+            --master-boot-disk-size $MASTER_DISK_SIZE \
+            --num-workers $WORKERS \
+            --worker-machine-type n1-standard-1 \
+            --worker-boot-disk-size $WORKER_DISK_SIZE \
+            --num-preemptible-workers $PREEMPTIBLE_WORKERS \
+            --image-version $IMAGE \
+            --scopes 'https://www.googleapis.com/auth/cloud-platform' \
+            --labels environment=$ENVIRONMENT \
+            --tags dataproc-access \
+            --project $PROJECT_ID
+
+        echo "[INFO] you can SSH onto the master node by running the below command"
+        echo "$(tput setaf 5)       => gcloud beta compute --project $PROJECT_ID ssh --zone $ZONE $CLUSTER_NAME-m"
+        echo "      => You can access Jupyter Notebook from the GCP Web Interfaces Console $(tput sgr0)"
+    else
+        echo "$(tput setaf 3)[WARN] Cluster already exists with name $CLUSTER_NAME. Hence skipping the create action $(tput sgr0)."
+        echo "[INFO] You can SSH onto the master node by running the below command."
+        echo "$(tput setaf 5)       => gcloud beta compute --project $PROJECT_ID ssh --zone $ZONE $CLUSTER_NAME-m "
+        echo "      => You can access Jupyter Notebook from the GCP Web Interfaces Console $(tput sgr0)"
+        echo ""
+        exit 0
+    fi
+else
+    echo "$(tput setaf 1)[ERROR] Un-known action. Only create/delete are allowed for '--action' parameter. $(tput sgr0)"
+    echo ""
+    exit 1
+fi
