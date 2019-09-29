@@ -1,4 +1,5 @@
-# codebooks
+# Code books
+
 Jupyter notebooks used for quick experimenting
 
 ## Tools
@@ -25,6 +26,7 @@ Jupyter notebooks used for quick experimenting
 -h   | --help                    Displays all the available options  
 
 #### Example usage
+
   => ./gcp/dataproc --gcloud-email=sample@gmail.com  
           --project-id=spark-dataproc-cluster  
           --cluster-name=test-spark-cluster  
