@@ -49,11 +49,11 @@ gsutil -m rsync -d -r gs://$BUCKET/notebooks/jupyter/books ./books
           --bucket=dataproc-statestore  
           --action=create  
 
-> Note: All data used for testing is sourced from [Spark: The definitive guide](https://github.com/databricks/Spark-The-Definitive-Guide)
-
 ### Data for Experimenting
 
 ```sh
 export DATA_BUCKET=reddys-data-for-experimenting
 gsutil -m rsync -d -r ./data gs://$DATA_BUCKET/
 ```
+
+> Note: All data used for testing is sourced from [Spark: The definitive guide](https://github.com/databricks/Spark-The-Definitive-Guide)
