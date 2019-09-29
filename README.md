@@ -25,7 +25,7 @@ Jupyter notebooks used for quick experimenting
 -h   | --help                    Displays all the available options  
 
 #### Example usage
-  => ./dataproc.sh --gcloud-email=sample@gmail.com  
+  => ./gcp/dataproc --gcloud-email=sample@gmail.com  
           --project-id=spark-dataproc-cluster  
           --cluster-name=test-spark-cluster  
           --bucket=dataproc-statestore  
