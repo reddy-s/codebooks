@@ -1,6 +1,22 @@
 # Code books
 
-Jupyter notebooks used for quick experimenting
+Jupyter notebooks used for quick experimenting.
+
+## Spark
+
+You can privison a fully configured spark cluster by using the `Dataproc` tool which you can find in the `Tools` section. Once the cluster is up and running, go ahead an sync the `codebooks` directory to the dataproc clusters statestore directory which is `gs://$BUCKET/noteooks/jupyter/codebooks` by running the following command from the root dir of the repository.
+
+```sh
+export BUCKET=dataproc-statestore
+gsutil -m rsync -d -r ./books gs://$BUCKET/notebooks/jupyter/books
+```
+
+Once you are done with experimenting, you can sync the changes back to you local dir by running the following command
+
+```sh
+export BUCKET=dataproc-statestore
+gsutil -m rsync -d -r gs://$BUCKET/notebooks/jupyter/books ./books
+```
 
 ## Tools
 
@@ -34,3 +50,10 @@ Jupyter notebooks used for quick experimenting
           --action=create  
 
 > Note: All data used for testing is sourced from [Spark: The definitive guide](https://github.com/databricks/Spark-The-Definitive-Guide)
+
+### Data for Experimenting
+
+```sh
+export DATA_BUCKET=reddys-data-for-experimenting
+gsutil -m rsync -d -r ./data gs://$DATA_BUCKET/
+```
