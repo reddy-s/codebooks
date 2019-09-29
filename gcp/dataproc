@@ -25,7 +25,7 @@ unset IMAGE
 function usage()
 {
     echo ""
-    echo "$(tput setaf 7)Provison a GCP DataProc Cluster using this script $(tput sgr0)"
+    echo "$(tput setaf 7)👉 Provison a GCP DataProc Cluster using this script $(tput sgr0)"
     echo ""
     echo "-p   | --project-id              Project id to create/use (Mandatory)"
     echo "-ge  | --gcloud-email            Gcloud Email Address (Mandatory)"
@@ -44,7 +44,7 @@ function usage()
     echo "-i   | --image                   Image to be used for dataproc cluster, DEFAULT: 1.3-debian9"
     echo "-h   | --help                    Displays all the available options"
     echo ""
-    echo "$(tput setaf 7)Example usage: $(tput sgr0)"
+    echo "$(tput setaf 7)👉 Example usage: $(tput sgr0)"
     echo "  => ./gcp/dataproc"
     echo "          --gcloud-email=sample@gmail.com"
     echo "          --project-id=spark-dataproc-cluster"
@@ -108,7 +108,7 @@ while [ "$1" != "" ]; do
             ZONE=$VALUE
             ;;
         *)
-            echo "$(tput setaf 1)[ERROR] unknown parameter \"$PARAM\" $(tput sgr0)"
+            echo "$(tput setaf 1)[🛑]  unknown parameter \"$PARAM\" $(tput sgr0)"
             usage
             exit 1
             ;;
@@ -117,22 +117,22 @@ while [ "$1" != "" ]; do
 done
 
 if [[ -z "$GCLOUD_EMAIL" ]]; then
-    echo "$(tput setaf 1)[ERROR] GCP Email Address not specified. Use the '--gcloud-email' flag to specify the email address to authenticate with GCP."
+    echo "$(tput setaf 1)[🛑]  GCP Email Address not specified. Use the '--gcloud-email' flag to specify the email address to authenticate with GCP."
     exit 1
 fi
 
 if [[ -z "$PROJECT_ID" ]]; then
-    echo "$(tput setaf 1)[ERROR] GCP Project ID not specified. Use the '--project-id' flag to specify which project to use/create in GCP."
+    echo "$(tput setaf 1)[🛑]  GCP Project ID not specified. Use the '--project-id' flag to specify which project to use/create in GCP."
     exit 1
 fi
 
 if [[ -z "$CLUSTER_NAME" ]]; then
-    echo "$(tput setaf 1)[ERROR] DataProc cluster name not specified. Use the '--cluster-name' flag to specify which project to create in GCP."
+    echo "$(tput setaf 1)[🛑]  DataProc cluster name not specified. Use the '--cluster-name' flag to specify which project to create in GCP."
     exit 1
 fi
 
 if [[ -z "$BUCKET" ]]; then
-    echo "$(tput setaf 1)[ERROR] Bucket name for state store not specified. Use the '--bucket' flag to specify which bucket to be used for state store in GCP."
+    echo "$(tput setaf 1)[🛑]  Bucket name for state store not specified. Use the '--bucket' flag to specify which bucket to be used for state store in GCP."
     exit 1
 fi
 
@@ -246,7 +246,7 @@ if [ $ACTION == 'delete' ]; then
         exit 0
     else
         gcloud dataproc clusters delete $CLUSTER_NAME --region $REGION
-        echo "$(tput setaf 4)[INFO] Sucessfully deleted the dataproc cluster: $CLUSTER_NAME.$(tput sgr0)"
+        echo "$(tput setaf 4)[👍]   Sucessfully deleted the dataproc cluster: $CLUSTER_NAME.$(tput sgr0)"
     fi
 elif [ $ACTION == 'create' ]; then
     if [[ -z $(gcloud dataproc clusters list --region $REGION --filter=clusterName=$CLUSTER_NAME --format="value(clusterName)") ]]; then
@@ -272,7 +272,7 @@ elif [ $ACTION == 'create' ]; then
             --tags dataproc-access \
             --project $PROJECT_ID
 
-        echo "[INFO] you can SSH onto the master node by running the below command"
+        echo "[👍]   you can SSH onto the master node by running the below command"
         echo "$(tput setaf 5)       => gcloud beta compute --project $PROJECT_ID ssh --zone $ZONE $CLUSTER_NAME-m"
         echo "       => You can access Jupyter Notebook from: $(gcloud beta dataproc clusters describe test-spark-cluster --region europe-west2 --format="value(config.endpointConfig.httpPorts.Jupyter)" ) $(tput sgr0)"
     else
@@ -284,7 +284,7 @@ elif [ $ACTION == 'create' ]; then
         exit 0
     fi
 else
-    echo "$(tput setaf 1)[ERROR] Un-known action. Only create/delete are allowed for '--action' parameter. $(tput sgr0)"
+    echo "$(tput setaf 1)[🛑]  Un-known action. Only create/delete are allowed for '--action' parameter. $(tput sgr0)"
     echo ""
     exit 1
 fi
