@@ -274,12 +274,12 @@ elif [ $ACTION == 'create' ]; then
 
         echo "[👍]   you can SSH onto the master node by running the below command"
         echo "$(tput setaf 5)       => gcloud beta compute --project $PROJECT_ID ssh --zone $ZONE $CLUSTER_NAME-m"
-        echo "       => You can access Jupyter Notebook from: $(gcloud beta dataproc clusters describe test-spark-cluster --region europe-west2 --format="value(config.endpointConfig.httpPorts.Jupyter)" ) $(tput sgr0)"
+        echo "       => You can access Jupyter Notebook from: $(gcloud beta dataproc clusters describe $CLUSTER_NAME --region europe-west2 --format="value(config.endpointConfig.httpPorts.Jupyter)" ) $(tput sgr0)"
     else
         echo "$(tput setaf 3)[WARN] Cluster already exists with name $CLUSTER_NAME. Hence skipping the create action $(tput sgr0)."
         echo "[INFO] You can SSH onto the master node by running the below command."
         echo "$(tput setaf 5)       => gcloud beta compute --project $PROJECT_ID ssh --zone $ZONE $CLUSTER_NAME-m "
-        echo "       => You can access Jupyter Notebook from: $(gcloud beta dataproc clusters describe test-spark-cluster --region europe-west2 --format="value(config.endpointConfig.httpPorts.Jupyter)" ) $(tput sgr0)"
+        echo "       => You can access Jupyter Notebook from: $(gcloud beta dataproc clusters describe $CLUSTER_NAME --region europe-west2 --format="value(config.endpointConfig.httpPorts.Jupyter)" ) $(tput sgr0)"
         echo ""
         exit 0
     fi
