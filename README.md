@@ -43,11 +43,29 @@ gsutil -m rsync -d -r gs://$BUCKET/notebooks/jupyter/books ./books
 
 #### Example usage
 
-  => ./gcp/dataproc --gcloud-email=sample@gmail.com  
+  => ./jupyter/gcp/dataproc --gcloud-email=sample@gmail.com  
           --project-id=spark-dataproc-cluster  
           --cluster-name=test-spark-cluster  
           --bucket=dataproc-statestore  
           --action=create  
+
+### Running Jupiter notebook locally
+
+Build the docker image to refresh the packages
+
+```sh
+docker build -t <docker-username>/jupyter-notebook:v0.0.1 -f ./jupyter/local/Dockerfile
+```
+
+If you want to use the docker image already built, run the following command
+
+```sh
+docker run --rm --name jupyter \
+    -v ${PWD}/books:/home/jovyan/work/books \
+    -v ${PWD}/data:/home/jovyan/work/data \
+    -p 8888:8888 \
+    reddys310/jupyter-notebook:v0.0.1
+```
 
 ### Data for Experimenting
 
