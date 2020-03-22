@@ -1,6 +1,9 @@
 FROM jupyter/base-notebook:python-3.7.6
 
 RUN pip install --no-cache-dir \
+        awscli \
+        s3fs \
+        boto3 \
         numpy \
         scipy \
         pandas \
@@ -9,8 +12,7 @@ RUN pip install --no-cache-dir \
         tensorflow \
         keras \
         torch \
-        seaborn \
-        awscli
+        seaborn
 
 ENV AWS_DEFAULT_PROFILE=training
 
