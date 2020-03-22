@@ -63,6 +63,8 @@ If you want to use the docker image already built, run the following command
 docker run --rm --name jupyter \
     -v ${PWD}/books:/home/jovyan/work/books \
     -v ${PWD}/data:/home/jovyan/work/data \
+    -v ${HOME}/.aws:/home/jovyan/.aws \
+    -e AWS_DEFAULT_PROFILE=training \
     -p 8888:8888 \
     reddys310/jupyter-notebook:v0.0.1
 ```

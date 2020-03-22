@@ -9,6 +9,9 @@ RUN pip install --no-cache-dir \
         tensorflow \
         keras \
         torch \
-        seaborn
+        seaborn \
+        awscli
 
-VOLUME [ "/home/jovyan/work/books", "/home/jovyan/work/data" ]
+ENV AWS_DEFAULT_PROFILE=training
+
+VOLUME [ "/home/jovyan/work/books", "/home/jovyan/work/data", "/home/jovyan/.aws" ]
