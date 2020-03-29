@@ -105,3 +105,4 @@ venv.bak/
 
 # ignoring all output data
 notebooks/output/**/*
+kaggle/

@@ -1,6 +1,14 @@
 FROM jupyter/base-notebook:python-3.7.6
 
-RUN pip install --no-cache-dir \
+USER root
+
+LABEL application=jupyter.notbook.customized \
+      maintainer=SangramReddy<reddy.horcrux@gmail.com>
+
+ENV AWS_DEFAULT_PROFILE=training
+
+RUN groupadd -r reddys && useradd -r -g reddys reddys && \
+    pip install --no-cache-dir \
         awscli \
         s3fs \
         boto3 \
@@ -14,6 +22,6 @@ RUN pip install --no-cache-dir \
         torch \
         seaborn
 
-ENV AWS_DEFAULT_PROFILE=training
+VOLUME [ "/home/reddys/work/books", "/home/reddys/work/data", "/home/reddys/.aws", "/home/reddys/work/kaggle" ]
 
-VOLUME [ "/home/jovyan/work/books", "/home/jovyan/work/data", "/home/jovyan/.aws" ]
+USER reddys

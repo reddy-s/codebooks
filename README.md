@@ -61,9 +61,10 @@ If you want to use the docker image already built, run the following command
 
 ```sh
 docker run --rm --name jupyter \
-    -v ${PWD}/books:/home/jovyan/work/books \
-    -v ${PWD}/data:/home/jovyan/work/data \
-    -v ${HOME}/.aws:/home/jovyan/.aws \
+    -v ${PWD}/books:/home/reddys/work/books \
+    -v ${PWD}/data:/home/reddys/work/data \
+    -v ${PWD}/kaggle:/home/reddys/work/kaggle \
+    -v ${HOME}/.aws:/home/reddys/.aws \
     -e AWS_DEFAULT_PROFILE=training \
     -p 8888:8888 \
     reddys310/jupyter-notebook:v0.0.1
@@ -77,3 +78,7 @@ gsutil -m rsync -d -r ./data gs://$DATA_BUCKET/
 ```
 
 > Note: All data used for testing is sourced from [Spark: The definitive guide](https://github.com/databricks/Spark-The-Definitive-Guide)
+
+### ML Experimenting
+
+Using `Kaagle` datasets
