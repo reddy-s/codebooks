@@ -7,21 +7,20 @@ LABEL application=jupyter.notbook.customized \
 
 ENV AWS_DEFAULT_PROFILE=training
 
-RUN groupadd -r reddys && useradd -r -g reddys reddys && \
-    pip install --no-cache-dir \
-        awscli \
-        s3fs \
-        boto3 \
-        numpy \
-        scipy \
-        pandas \
-        matplotlib \
-        scikit-learn \
-        tensorflow \
-        keras \
-        torch \
-        seaborn
+RUN pip install --no-cache-dir \
+    awscli \
+    s3fs \
+    boto3 \
+    numpy \
+    scipy \
+    pandas \
+    matplotlib \
+    scikit-learn \
+    tensorflow \
+    keras \
+    torch \
+    seaborn
 
-VOLUME [ "/home/reddys/work/books", "/home/reddys/work/data", "/home/reddys/.aws", "/home/reddys/work/kaggle" ]
+VOLUME [ "/home/root/work/books", "/home/root/work/data", "/home/root/.aws", "/home/root/work/kaggle" ]
 
-USER reddys
+WORKDIR /home/root
