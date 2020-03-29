@@ -1,7 +1,5 @@
 FROM jupyter/base-notebook:python-3.7.6
 
-USER root
-
 LABEL application=jupyter.notbook.customized \
       maintainer=SangramReddy<reddy.horcrux@gmail.com>
 

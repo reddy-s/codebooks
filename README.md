@@ -61,10 +61,10 @@ If you want to use the docker image already built, run the following command
 
 ```sh
 docker run --rm --name jupyter \
-    -v ${PWD}/books:/home/root/work/books \
-    -v ${PWD}/data:/home/root/work/data \
-    -v ${PWD}/kaggle:/home/root/work/kaggle \
-    -v ${HOME}/.aws:/home/root/.aws \
+    -v ${PWD}/books:/home/jovyan/work/books \
+    -v ${PWD}/data:/home/jovyan/work/data \
+    -v ${PWD}/kaggle:/home/jovyan/work/kaggle \
+    -v ${HOME}/.aws:/home/jovyan/.aws \
     -e AWS_DEFAULT_PROFILE=training \
     -p 8888:8888 \
     reddys310/jupyter-notebook:v0.0.1
